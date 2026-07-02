@@ -1,0 +1,30 @@
+name: CI
+
+
+on:
+  push:
+    branches: [ main ]
+  pull:
+    branches: [ main ]
+
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+        
+      - name: Install dependencies
+        run: pip install pytest pytest-mock pyspark
+
+      - name: Run tests
+        run: |
+          cd 01-spotify-pipeline
+          python3 -m pytest test_bronze.py -v
