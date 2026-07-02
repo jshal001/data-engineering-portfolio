@@ -1,5 +1,5 @@
 """
-Ingests raw Spotify tracks CSV from a Unity Catalog volume into a
+Ingest raw Spotify tracks CSV from a Unity Catalog volume into a
 Bronze Delta table
 
 Usage (Databricks):
