@@ -1,8 +1,6 @@
 """
-bronze_ingestion.py
-
 Ingests raw Spotify tracks CSV from a Unity Catalog volume into a
-Bronze Delta table with an explicit all-STRING schema.
+Bronze Delta table
 
 Usage (Databricks):
     %run ./bronze_ingestion
@@ -159,7 +157,7 @@ def run_bronze_ingestion(
         f"Row count mismatch: COPY INTO inserted {rows:,} "
         f"but table contains {total:,}. "
         "Check for pre-existing data or duplicate loads."
-    )
+        )
         log.error(msg)  
         raise ValueError(msg)
 

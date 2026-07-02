@@ -18,6 +18,18 @@ from bronze_ingestion import (
 )
 
 
+def test_create_bronze_table():
+    """create_bronze_table should create an empty bronze table with the correct schema -- does not return anything"""
+    mock_spark = MagicMock()
+    create_bronze_table(mock_spark, "workspace", "spotify_pipeline", "spotifytracks_bronze")
+    call_args = mock_spark.sql.call_args[0][0]
+
+    assert "CREATE TABLE IF NOT EXISTS workspace.spotify_pipeline.spotifytracks_bronze" in call_args
+    assert "track_id" in call_args
+    assert "track_genre" in call_args 
+
+
+
 # ---------------------------------------------------------------------------
 # verify_bronze
 # ---------------------------------------------------------------------------
