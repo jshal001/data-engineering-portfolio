@@ -1,0 +1,57 @@
+version: 2
+
+models: 
+  - name: spotifytracks_silver
+    description: "Silver transformations model for spotify tracks"
+    columns:
+      - name: track_id
+        description: "Unique identifier for each track"
+        tests: 
+          - not_null
+
+      - name: track_genre
+        description: "The genre of the track"
+        tests: 
+          - not_null
+      
+      - name: popularity
+        description: "Popularity score of the track from 0 to 100"
+        tests:
+          - not_null
+      
+      - name: explicit
+        description: "A boolean value for if the track is explicit or not"
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true,false]
+        
+      - name: danceability
+        description: "How suitable a track is for dancing based on musical elements, from 0.0 to 1.0"
+        tests:
+          - not_null
+      
+      - name: energy
+        description: "Perceptual measure of intensity and activity, from 0.0 to 1.0"
+        tests: 
+          - not_null
+        
+      - name: loudness
+        description: "overall loudness of the track in decibels"
+        tests: 
+          - not_null
+
+      - name: acousticness
+        description: "Confidence measure of whether the track is acoustic, from 0.0 to 1.0"
+        tests: 
+          - not_null
+
+      - name: valence
+        description: "Musical postiveness conveyed by th track, from 0.0 to 1.0"
+        tests: 
+          - not_null
+      
+      - name: tempo
+        description: "Estimated tempo fo the track in beats per minute"
+        tests: 
+          - not_null

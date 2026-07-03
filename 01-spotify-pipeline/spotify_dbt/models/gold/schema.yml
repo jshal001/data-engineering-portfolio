@@ -1,0 +1,48 @@
+version: 2
+
+models:
+  - name: spotifytracks_gold
+    description: "Gold aggregation model comparing audio features between high and low popularity tracks"
+    columns:
+      - name: popularity_group
+        description: "Popularity group — high (top 10%) or low (bottom 10%)"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['high', 'low']
+
+      - name: track_count
+        description: "Number of tracks in each popularity group"
+        tests:
+          - not_null
+
+      - name: avg_danceability
+        description: "Average danceability score for tracks in the group"
+        tests:
+          - not_null
+
+      - name: avg_energy
+        description: "Average energy score for tracks in the group"
+        tests:
+          - not_null
+
+      - name: avg_loudness
+        description: "Average loudness in decibels for tracks in the group"
+        tests:
+          - not_null
+
+      - name: avg_acousticness
+        description: "Average acousticness score for tracks in the group"
+        tests:
+          - not_null
+
+      - name: avg_valence
+        description: "Average valence score for tracks in the group"
+        tests:
+          - not_null
+
+      - name: avg_tempo
+        description: "Average tempo in BPM for tracks in the group"
+        tests:
+          - not_null
