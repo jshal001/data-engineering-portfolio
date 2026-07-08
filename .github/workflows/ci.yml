@@ -37,7 +37,7 @@ jobs:
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
         run: |
           mkdir -p ~/.dbt
-          cat > ~/.dbt/profiles.yml << EOF
+          cat > ~/.dbt/profiles.yml << 'EOF'
 spotify_dbt:
   target: dev
   outputs:
@@ -50,6 +50,7 @@ spotify_dbt:
       schema: spotify_pipeline
       threads: 4
 EOF
+
       - name: Run dbt test
         run: |
           cd 01-spotify-pipeline/spotify_dbt
