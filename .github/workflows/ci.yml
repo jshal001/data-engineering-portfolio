@@ -39,4 +39,4 @@ jobs:
           DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
         run: |
           cd 01-spotify-pipeline/spotify_dbt
-          dbt test
+          dbt run && dbt test
