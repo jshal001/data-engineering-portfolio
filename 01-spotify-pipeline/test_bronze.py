@@ -2,7 +2,7 @@
 test_bronze.py
 
 Unit tests for bronze_ingestion.py
-Each test mocks SparkSession so no real cluster is needed.
+Each test mocks SparkSession so no real cluster is needed
 """
 
 import pytest
