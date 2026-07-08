@@ -1,13 +1,11 @@
-name: CI
-
+name: CD
 
 on:
-  pull_request:
+  push:
     branches: [ main ]
 
-
 jobs:
-  test:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -18,19 +16,12 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
-        
-      - name: Install dependencies
-        run: pip install pytest pytest-mock pyspark
 
-      - name: Run pytests
-        run: |
-          cd 01-spotify-pipeline
-          python3 -m pytest test_bronze.py -v
       
       - name: Install dbt-databricks
         run: pip install dbt-databricks
 
-      - name: Run dbt test
+      - name: Dbt run
         env:
           DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
