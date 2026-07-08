@@ -24,7 +24,33 @@ jobs:
       - name: Install dependencies
         run: pip install pytest pytest-mock pyspark
 
-      - name: Run tests
+      - name: Run pytests
         run: |
           cd 01-spotify-pipeline
           python3 -m pytest test_bronze.py -v
+      
+      - name: Install dbt-databricks
+        run: pip install dbt-databricks
+
+      - name: Create profiles.yml file
+        env:
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: |
+          mkdir -p ~/.dbt
+          cat > ~/.dbt/profiles.yml << EOF
+spotify_dbt:
+  target: dev
+  outputs:
+    dev:
+      type: databricks
+      host: dbc-2beb20b8-3f88.cloud.databricks.com
+      http_path: /sql/1.0/warehouses/eb0866273e537682
+      token: $DATABRICKS_TOKEN
+      catalog: workspace
+      schema: spotify_pipeline
+      threads: 4
+EOF
+      - name: Run dbt test
+        run: |
+          cd 01-spotify-pipeline/spotify_dbt
+          dbt test
