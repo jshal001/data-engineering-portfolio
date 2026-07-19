@@ -27,5 +27,5 @@ jobs:
           DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
           DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
         run: |
-          cd 01-spotify-pipeline/spotify_dbt
+          cd spotify-tracks-pipeline/spotify_dbt
           dbt run && dbt test
