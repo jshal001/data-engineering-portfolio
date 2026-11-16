@@ -27,35 +27,35 @@ jobs:
             spotify:
               - 'spotify-tracks-pipeline/**'
               - '.github/workflows/spotify-ci.yml'
-    spotify-tests: 
-      needs: changes
-      if: needs.changes.outputs.spotify == 'true'
-      runs-on: ubuntu-latest
-      steps:
-        -name: Checkout code
-         uses: actions/checkout@v4
-         
-        - name: Set up Python
-          uses: actions/setup-python@v4
-          with:
-            python-version: '3.12'
-          
-        - name: Install dependencies
-          run: pip install pytest pytest-mock pyspark
-
-        - name: Run pytests
-          run: |
-            cd spotify-tracks-pipeline
-            python3 -m pytest test_bronze.py -v
+  spotify-tests: 
+    needs: changes
+    if: needs.changes.outputs.spotify == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
         
-        - name: Install dbt-databricks
-          run: pip install dbt-databricks
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+        
+      - name: Install dependencies
+        run: pip install pytest pytest-mock pyspark
 
-        - name: Run dbt test
-          env:
-            DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
-            DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
-            DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
-          run: |
-            cd spotify-tracks-pipeline/spotify_dbt
-            dbt run && dbt test
+      - name: Run pytests
+        run: |
+          cd spotify-tracks-pipeline
+          python3 -m pytest test_bronze.py -v
+      
+      - name: Install dbt-databricks
+        run: pip install dbt-databricks
+
+      - name: Run dbt test
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+          DATABRICKS_HTTP_PATH: ${{ secrets.DATABRICKS_HTTP_PATH }}
+        run: |
+          cd spotify-tracks-pipeline/spotify_dbt
+          dbt run && dbt test
