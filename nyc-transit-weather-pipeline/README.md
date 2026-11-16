@@ -2,6 +2,7 @@
 
 Does bad weather slow down the NYC subway, and by how much?
 
+
 A medallion pipeline on Databricks that measures how long trains take on fixed stretches of track compared with their usual time, and joins every measurement to the weather at that hour.
 
 **Status:** in progress
