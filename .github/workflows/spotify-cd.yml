@@ -1,11 +1,13 @@
-name: CD
+name: Spotify CD
 
 on:
   push:
     branches: [ main ]
-
+    paths: 
+      - "spotify-tracks-pipeline/**"
+      - ".github/workflows/spotify-cd.yml"
 jobs:
-  deploy:
+  spotify-deploy:
     runs-on: ubuntu-latest
 
     steps:
