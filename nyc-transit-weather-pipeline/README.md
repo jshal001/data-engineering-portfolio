@@ -16,6 +16,7 @@ Routes don't always run the same path, so whole trips aren't comparable. Instead
 3. The difference is **excess**. 2+ minutes counts as delayed.
 4. Join the **weather** for that hour.
 
+Design decisions and reasoning: [DESIGN.md](DESIGN.md).
 ## Planned architecture
 
 ```
