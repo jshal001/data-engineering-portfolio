@@ -19,11 +19,12 @@ Each service date uses one subway source: the archive before the poller's first 
 
 ```
 MTA poller ───────┐
-Archive ──────────┼──> landing Volume ──> Bronze ──> Silver ──> Gold ──> Postgres
+Archive ──────────┼──> landing Volume ──> Bronze ──> Silver ──> Gold ──> Postgres (Lakebase)
 NOAA / weather.gov┘
 ```
 
 - Airflow triggers Databricks Jobs.
+- The archive and weather downloaders run as Databricks jobs. The poller runs on a separate always-on host, since polling every 30 seconds as a Databricks job would run continuously.
 - Every stage reads and writes only the landing Volume or Unity Catalog tables, with catalog and schema passed as parameters, so any stage can change where or how it runs without affecting the others.
 
 ## Environments
@@ -38,7 +39,9 @@ nyc_transit_prod
 └── gold
 
 nyc_transit_dev
-├── landing.checkpoints  separate from prod's
+├── landing
+│   ├── files            test runs of ingestion code only
+│   └── checkpoints      one folder per owner, separate from prod's
 ├── <developer>_*        each developer's own schemas
 └── pr_<number>_*        one set per open pull request
 ```
@@ -48,18 +51,18 @@ nyc_transit_dev
 
 ## Bronze
 
-Append-only, unaltered copies of the landed files, queryable as Delta tables.
+Append-only, unaltered copies of the landed files, queryable as Delta tables. The archive downloader extracts each daily `.tar.xz` and lands its CSVs gzipped, which Auto Loader reads directly.
 
 | Table | Loaded with | Schema changes |
 |---|---|---|
 | `mta_snapshots` | Auto Loader (`binaryFile`) | Fixed |
-| `archive_trips`, `archive_stop_times` | Auto Loader, all strings | `rescue`: logged in backfill, halts daily runs |
+| `archive_trips`, `archive_stop_times` | Auto Loader, from gzipped CSVs, all strings | `rescue`: logged in backfill, halts daily runs |
 | `weather_final` | COPY INTO | Fixed |
 | `weather_preliminary` | Auto Loader | `rescue`, halts |
 
 ## Silver
 
-Runs once per service day after it ends; each run replaces that day's partition.
+Runs once per service day after it ends; each run replaces that day's partition. The 12-month backfill runs one month at a time (~7M stop rows per month).
 
 - **`trips`:** one row per `trip_uid`, with an `is_rerouted` flag.
 - **`stop_times`:** one row per trip per stop. `last_observed_ts` and `marked_past_ts` bracket when the train passed; their gap measures timing precision.
@@ -79,7 +82,7 @@ Runs once per service day after it ends; each run replaces that day's partition.
 
 - Segments, not trips: routes vary (branches, express vs local, reroutes), but the track between stations doesn't.
 - Segment time from observed timestamps, not predictions.
-- Baseline: median per segment, hour, day type, and season, from non-rerouted trips.
+- Baseline: median (`percentile_approx`) per segment, hour, day type, and season, from non-rerouted trips. Computed one season at a time after the backfill (~74M traversals per year).
 - **Excess** over baseline is the main metric; **delayed** = 2+ minutes.
 - Joined to the weather for that hour, with `weather_status` (preliminary or final).
 
@@ -104,18 +107,16 @@ Thresholds are derived from observed distributions.
 
 ## Serving
 
-Gold is loaded into a Postgres staging table, then upserted into the target in one transaction.
+Gold is written over JDBC from Databricks into a staging table in Lakebase (Databricks-managed Postgres), then upserted into the target in one transaction.
 
 ## Constraints and fallbacks
 
-| Item | Plan | Fallback |
+| Item | Here | In production / fallback |
 |---|---|---|
-| Compute | Serverless (Free Edition only) | On a paid workspace: job clusters, Photon only where measured to help |
-| Poller hosting | Laptop, uploading to the Volume | Always-on service in production |
-| Postgres serving | Databricks JDBC to cloud Postgres | Airflow task reads gold and upserts |
-| Downloads | Databricks jobs | Same code from Airflow, uploading to the Volume |
-| CI/CD identity | Service principal | Personal access token |
-| Weather MERGE | Preliminary + final | Final only |
+| Compute | Serverless only (Free Edition) | Job clusters for scheduled work; Photon only where measured to help |
+| Usage quota | Daily compute cap: incremental daily runs, monthly backfill chunks, per-season baseline | Not a constraint on a paid workspace |
+| Poller host | Laptop, uploading to the Volume | Always-on container service |
+| Weather MERGE | Preliminary + final sources | Final only, if it runs over its timebox |
 
 ## Limitations
 

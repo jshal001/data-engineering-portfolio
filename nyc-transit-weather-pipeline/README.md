@@ -2,7 +2,6 @@
 
 Does bad weather slow down the NYC subway, and by how much?
 
-
 A medallion pipeline on Databricks that measures how long trains take on fixed stretches of track compared with their usual time, and joins every measurement to the weather at that hour.
 
 **Status:** in progress
@@ -17,18 +16,19 @@ Routes don't always run the same path, so whole trips aren't comparable. Instead
 4. Join the **weather** for that hour.
 
 Design decisions and reasoning: [DESIGN.md](DESIGN.md).
+
 ## Planned architecture
 
 ```
 MTA GTFS-realtime (poller) ──┐
-subwaydata.nyc archive ──────┼──> UC Volume ──> Bronze ──> Silver ──> Gold ──> Postgres
-NOAA weather (Central Park) ─┘
+subwaydata.nyc archive ──────┼──> UC Volume ──> Bronze ──> Silver ──> Gold ──> Postgres (Lakebase)
+NOAA / weather.gov ──────────┘
 ```
 
-- **Bronze:** raw files, append-only
+- **Bronze:** unaltered source data as Delta tables, append-only
 - **Silver:** one clean shape for both subway sources, plus hourly weather
 - **Gold:** one row per train per 5-stop segment, with excess and weather
-- **Serving:** Postgres, loaded via JDBC staging table and upsert
+- **Serving:** Lakebase (Databricks-managed Postgres), loaded via JDBC staging table and upsert
 - **Orchestration:** Airflow triggering Databricks Jobs
 
 ## Data sources
@@ -37,4 +37,5 @@ NOAA weather (Central Park) ─┘
 |---|---|
 | MTA GTFS-realtime | Live train positions, every ~30s, from the poller start date forward |
 | [subwaydata.nyc](https://subwaydata.nyc) | Daily archive of the same feeds: 12-month backfill |
-| NOAA historical hourly, Central Park | Weather for every hour |
+| api.weather.gov, Central Park | Preliminary hourly weather, later corrected by NOAA |
+| NOAA historical hourly, Central Park | Final weather for every hour |
